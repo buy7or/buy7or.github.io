@@ -44,10 +44,14 @@ import { SITE_TITLE } from '../consts';
 </header>
 <style>
 	header {
-		margin: 0;
-		padding: 0 1em;
+		position: sticky;
+		top: 0;
+		left: 0;
+		width: 100%;
 		background: white;
-		box-shadow: 0 2px 8px rgba(var(--black), 5%);
+		opacity: 95%;
+		z-index: 1000;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 	}
 	h2 {
 		margin: 0;
