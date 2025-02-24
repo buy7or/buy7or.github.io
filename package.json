@@ -1,17 +1,23 @@
 {
-  "name": "buy7or-github-io",
+  "name": "porfolio-dev",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "start": "astro dev",
+    "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.0.8",
-    "@astrojs/rss": "^4.0.11",
-    "@astrojs/sitemap": "^3.2.1",
-    "astro": "^5.3.0"
+    "@astrojs/check": "0.5.6",
+    "@fontsource-variable/onest": "5.0.2",
+    "astro-robots-txt": "1.0.0",
+    "tailwindcss": "3.4.1",
+    "typescript": "5.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/tailwind": "^6.0.0",
+    "astro": "^5.3.1"
   }
 }
