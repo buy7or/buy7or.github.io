@@ -1,9 +1,6 @@
----
-const totalItems = 4;
----
-
 <article class="flex flex-col items-center justify-center gap-8 text-gray-700 dark:text-gray-300 md:flex-row">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <input type="text" id="search" placeholder="Buscar por nombre..." class="mb-4 p-2 border rounded w-full">
     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
@@ -16,34 +13,12 @@ const totalItems = 4;
       </thead>
       <tbody id="table-body"></tbody>
     </table>
-
-    <!-- Paginación -->
-    <nav class="flex items-center justify-between pt-4">
-      <span class="text-sm text-gray-500 dark:text-gray-400">
-        Showing <strong id="page-range" class="text-gray-900 dark:text-white"></strong> of 
-        <strong class="text-gray-900 dark:text-white">{totalItems}</strong>
-      </span>
-      <ul class="inline-flex items-center">
-        <li>
-          <button id="prev-page" class="px-3 py-1 border rounded-l-lg dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 disabled:opacity-50" disabled>
-            Previous
-          </button>
-        </li>
-        <li>
-          <button id="next-page" class="px-3 py-1 border rounded-r-lg dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 disabled:opacity-50">
-            Next
-          </button>
-        </li>
-      </ul>
-    </nav>
   </div>
 </article>
 
 <script>
   let currentPage = 1;
   const itemsPerPage = 10;
-
-  // Lista de productos personalizados
   const products = [
     { name: "Laptop HP", difficulty: "15-inch, 8GB RAM", platform: "Electronics", machine: "http", writeup: "http" },
     { name: "Mouse Logitech", difficulty: "Wireless, ergonomic", platform: "Accessories", machine: "http", writeup: "http" },
@@ -51,19 +26,11 @@ const totalItems = 4;
     { name: "Smartphone Samsung", difficulty: "Galaxy S22, 128GB", platform: "Electronics", machine: "http", writeup: "http" }
   ];
 
-  const totalItems = products.length; // Solo los productos definidos
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  function loadTable() {
+  function loadTable(filteredProducts = products) {
     const tableBody = document.getElementById("table-body");
     tableBody.innerHTML = "";
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = Math.min(currentPage * itemsPerPage, totalItems);
     
-    for (let i = start; i < end; i++) {
-      const product = products[i];
-      if (!product) break; // Evita errores si hay menos productos que el límite de la página
-
+    filteredProducts.forEach(product => {
       const row = document.createElement("tr");
       row.className = "bg-white border-b dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600";
       row.innerHTML = `
@@ -78,25 +45,13 @@ const totalItems = 4;
         </td>
       `;
       tableBody.appendChild(row);
-    }
-
-    document.getElementById("page-range").textContent = `${start + 1}-${end}`;
-    document.getElementById("prev-page").disabled = currentPage === 1;
-    document.getElementById("next-page").disabled = currentPage === totalPages;
+    });
   }
 
-  document.getElementById("prev-page").addEventListener("click", () => {
-    if (currentPage > 1) {
-      currentPage--;
-      loadTable();
-    }
-  });
-
-  document.getElementById("next-page").addEventListener("click", () => {
-    if (currentPage < totalPages) {
-      currentPage++;
-      loadTable();
-    }
+  document.getElementById("search").addEventListener("input", function() {
+    const query = this.value.toLowerCase();
+    const filteredProducts = products.filter(product => product.name.toLowerCase().includes(query));
+    loadTable(filteredProducts);
   });
 
   loadTable();
