@@ -1,79 +1,91 @@
 ---
- const personalImageAlt = "Miguel Ángel"
+const itemsPerPage = 10;
+const totalItems = 1000;
+const totalPages = Math.ceil(totalItems / itemsPerPage);
 ---
 
 <article class="flex flex-col items-center justify-center gap-8 text-gray-700 dark:text-gray-300 md:flex-row">
-  <div
-    class="[&>p]:mb-4 [&>p>strong]:text-yellow-500 dark:[&>p>strong]:text-yellow-100 [&>p>strong]:font-normal [&>p>strong]:font-mono text-pretty order-2 md:order-1"
-  >
-    <p>
-      Me llamo Miguel Ángel pero mis amigos me llaman midu. Empecé en la
-      programación con un Amstrad, tenía 10 años. Actualmente estoy <strong
-        >liderando equipos de desarrollo en multinacionales</strong
-      >.
-    </p>
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          <th class="px-6 py-3">Product Name</th>
+          <th class="px-6 py-3">Color</th>
+          <th class="px-6 py-3">Category</th>
+          <th class="px-6 py-3">Price</th>
+          <th class="px-6 py-3">Action</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
 
-    <p>
-      Algunos de mis éxitos incluyen <strong
-        >colaborar con Mozilla para el desarrollo de las primeras apps en su
-        sistema FirefoxOS</strong
-      >. Aunque hoy está desaparecido fue un gran avance en el mundo del
-      desarrollo web.
-    </p>
-
-    <p>
-      Como creador de contenido, <strong
-        >cuento con el canal de habla hispana más visto del mundo en la
-        categoría de <em class="italic">Software & Game Development</em> en Twitch</strong
-      >. Mi objetivo es mejorar la empleabilidad de la comunidad hispana y el
-      acceso a contenido de calidad.
-    </p>
+    <!-- Paginación -->
+    <nav class="flex items-center justify-between pt-4">
+      <span class="text-sm text-gray-500 dark:text-gray-400">
+        Showing <strong id="page-range" class="text-gray-900 dark:text-white"></strong> of 
+        <strong class="text-gray-900 dark:text-white">{totalItems}</strong>
+      </span>
+      <ul class="inline-flex items-center">
+        <li>
+          <button id="prev-page" class="px-3 py-1 border rounded-l-lg dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 disabled:opacity-50" disabled>
+            Previous
+          </button>
+        </li>
+        <li>
+          <button id="next-page" class="px-3 py-1 border rounded-r-lg dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 disabled:opacity-50">
+            Next
+          </button>
+        </li>
+      </ul>
+    </nav>
   </div>
-
-  <img width="200" height="200" src="/me.png" alt={personalImageAlt} class="order-1 object-cover w-64 h-full p-1 md:order-2 rotate-3 lg:p-2 lg:w-64 aspect-square rounded-2xl bg-black/20 dark:bg-yellow-500/5 ring-1 ring-black/70 dark:ring-white/20 " style="object-position: 50% 50%">
-
 </article>
 
-<!-- FRASES PROHIBIDAS EN VUESTRO PORTFOLIO
+<script>
+  let currentPage = 1;
+  const itemsPerPage = 10;
+  const totalItems = 1000;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-<p>
-  Mi sueño es encontrar mi primer empleo en el mundo de la programación. Una empresa donde pueda seguir aprendiendo. ❌
-</p>
+  function loadTable() {
+    const tableBody = document.getElementById("table-body");
+    tableBody.innerHTML = "";
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    for (let i = start; i < end; i++) {
+      const row = document.createElement("tr");
+      row.className = "bg-white border-b dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600";
+      row.innerHTML = `
+        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">Product ${i + 1}</td>
+        <td class="px-6 py-4">Random</td>
+        <td class="px-6 py-4">Category X</td>
+        <td class="px-6 py-4">$${(Math.random() * 100).toFixed(2)}</td>
+        <td class="px-6 py-4">
+          <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    }
 
-<p>
-  ❌ Apasionado de la programación desde chekitito. Me encantan los ordenadores y crear páginas web buenas y rápidas con la última tecnología.
-</p>
+    document.getElementById("page-range").textContent = `${start + 1}-${end}`;
+    document.getElementById("prev-page").disabled = currentPage === 1;
+    document.getElementById("next-page").disabled = currentPage === totalPages;
+  }
 
-<p>
-  Trabajo bien en equipo. Siempre estoy aprendiendo cosas nuevas.
-</p>
+  document.getElementById("prev-page").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      loadTable();
+    }
+  });
 
--------------------------------------
+  document.getElementById("next-page").addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      loadTable();
+    }
+  });
 
---------------------------------------
-
-<p>
-  ¡Soy Leo! Estudié Derecho Empresarial y, tras años ejerciendo, me pasé al mundo de la Programación. Desde entonces disfruto creando experiencias web para los usuarios.
-</p>
-
-<p>
-  Entre mis éxitos destaco que durante el Grado Superior, ayudé a mis compañeros a aprender sobre TDD. Me encanta el testing, creo en su importancia, y me gusta compartir mi conocimiento sobre ello.
-</p>
-
-<p>
-  Cuento con experiencia desarrollando aplicaciones móviles, y he creado una iniciativa llamada X para mezclar mis dos pasiones: la programación y el derecho. Ayudando a la sociedad a acceso a una defensa justa.
-</p>
-
----------------------------------------
-
-<p>Me llamo Sara, tengo 25 años y soy de Santiago, Chile 🇨🇱. Terminé mis estudios como Desarrolladora Web. Me encanta enfocarme en la parte del rendimiento, para ofrecer la mejora experiencia al usuario.</p>
-
-<p>
-  Colaboro en la organización del MeetUp local BeerJS donde reunimos a desarrolladores de Santiago para compartir conocimiento y experiencias. El año 2023 hicimos un total de 25 charlas con más de 2000 asistentes.
-</p>
-
-<p>
-  Además de participar activamente en la comunidad, he participado en la Hackathon de Midudev quedando en 3er puesto con mi proyecto _Chatty_, donde usando IA podías interactuar con un PDF. ¡Échale un vistazo!
-</p>
-
--->
+  loadTable();
+</script>
