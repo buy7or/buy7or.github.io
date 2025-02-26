@@ -1,14 +1,16 @@
+---
+---
 <article class="flex flex-col items-center justify-center gap-8 text-gray-700 dark:text-gray-300">
-  <!-- Contenedor centrado y con ancho máximo -->
   <div class="w-full max-w-6xl px-4">
+    <!-- Campo de búsqueda -->
+    <input
+      type="text"
+      id="search"
+      placeholder="Search by name..."
+      class="mb-4 p-2 border rounded w-full"
+    />
+
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-      <!-- Campo de búsqueda responsive -->
-      <input
-        type="text"
-        id="search"
-        placeholder="Search by name..."
-        class="mb-4 p-2 border rounded w-full"
-      />
       <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
@@ -21,6 +23,26 @@
         </thead>
         <tbody id="table-body"></tbody>
       </table>
+
+      <!-- Paginación -->
+      <nav class="flex items-center justify-between pt-4">
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+          Showing <strong id="page-range" class="text-gray-900 dark:text-white"></strong> of 
+          <strong id="total-items" class="text-gray-900 dark:text-white">4</strong>
+        </span>
+        <ul class="inline-flex items-center">
+          <li>
+            <button id="prev-page" class="px-3 py-1 border rounded-l-lg dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 disabled:opacity-50" disabled>
+              Previous
+            </button>
+          </li>
+          <li>
+            <button id="next-page" class="px-3 py-1 border rounded-r-lg dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 disabled:opacity-50">
+              Next
+            </button>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
 </article>
@@ -28,6 +50,8 @@
 <script>
   let currentPage = 1;
   const itemsPerPage = 10;
+
+  // Lista de productos personalizados
   const products = [
     { name: "Validation", difficulty: "Easy", platform: "Hack The Box", machine: "https://app.hackthebox.com/machines/382", writeup: "http" },
     { name: "Headless", difficulty: "Easy", platform: "Hack The Box", machine: "https://app.hackthebox.com/machines/594", writeup: "http" },
@@ -35,11 +59,26 @@
     { name: "Mercury", difficulty: "Easy", platform: "Vulnhub", machine: "https://www.vulnhub.com/entry/the-planets-mercury,544/", writeup: "http" }
   ];
 
-  function loadTable(filteredProducts = products) {
+  // Almacena los productos filtrados, inicialmente todos
+  let filteredProducts = products;
+
+  // Actualiza el total de items en la UI
+  function updateTotalItems() {
+    document.getElementById("total-items").textContent = filteredProducts.length;
+  }
+
+  function loadTable() {
     const tableBody = document.getElementById("table-body");
     tableBody.innerHTML = "";
     
-    filteredProducts.forEach(product => {
+    const totalItems = filteredProducts.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    for (let i = start; i < end; i++) {
+      const product = filteredProducts[i];
+      if (!product) break;
       const row = document.createElement("tr");
       row.className = "bg-white border-b dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600";
       row.innerHTML = `
@@ -47,21 +86,48 @@
         <td class="px-6 py-4">${product.difficulty}</td>
         <td class="px-6 py-4">${product.platform}</td>
         <td class="px-6 py-4">
-          <a href="${product.machine}" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">Machine</a>
+          <a href="${product.machine}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Machine</a>
         </td>
         <td class="px-6 py-4">
-          <a href="${product.writeup}" class="font-medium text-green-600 dark:text-green-500 hover:underline">Write-Up</a>
+          <a href="${product.writeup}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Write-Up</a>
         </td>
       `;
       tableBody.appendChild(row);
-    });
+    }
+
+    // Actualiza el rango de elementos mostrados
+    document.getElementById("page-range").textContent = `${totalItems === 0 ? 0 : start + 1}-${end}`;
+    // Habilita o deshabilita los botones según la página actual
+    document.getElementById("prev-page").disabled = currentPage === 1;
+    document.getElementById("next-page").disabled = currentPage === totalPages || totalPages === 0;
   }
 
+  // Búsqueda: filtra productos y resetea la página actual
   document.getElementById("search").addEventListener("input", function() {
     const query = this.value.toLowerCase();
-    const filteredProducts = products.filter(product => product.name.toLowerCase().includes(query));
-    loadTable(filteredProducts);
+    filteredProducts = products.filter(product => product.name.toLowerCase().includes(query));
+    currentPage = 1;
+    updateTotalItems();
+    loadTable();
   });
 
+  document.getElementById("prev-page").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      loadTable();
+    }
+  });
+
+  document.getElementById("next-page").addEventListener("click", () => {
+    const totalItems = filteredProducts.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (currentPage < totalPages) {
+      currentPage++;
+      loadTable();
+    }
+  });
+
+  // Inicialización
+  updateTotalItems();
   loadTable();
 </script>
