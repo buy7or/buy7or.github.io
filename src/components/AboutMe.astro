@@ -45,10 +45,10 @@ const totalItems = 4;
 
   // Lista de productos personalizados
   const products = [
-    { name: "Laptop HP", description: "15-inch, 8GB RAM", category: "Electronics", price: 750.99 },
-    { name: "Mouse Logitech", description: "Wireless, ergonomic", category: "Accessories", price: 29.99 },
-    { name: "Cafetera Nespresso", description: "Modelo Vertuo, cápsulas", category: "Home", price: 129.50 },
-    { name: "Smartphone Samsung", description: "Galaxy S22, 128GB", category: "Electronics", price: 899.99 }
+    { name: "Laptop HP", difficulty: "15-inch, 8GB RAM", platform: "Electronics", machine: "http" },
+    { name: "Mouse Logitech", difficulty: "Wireless, ergonomic", platform: "Accessories", machine: "http" },
+    { name: "Cafetera Nespresso", difficulty: "Modelo Vertuo, cápsulas", platform: "Home", machine: "http" },
+    { name: "Smartphone Samsung", difficulty: "Galaxy S22, 128GB", platform: "Electronics", machine: "http" }
   ];
 
   const totalItems = products.length; // Solo los productos definidos
@@ -68,11 +68,13 @@ const totalItems = 4;
       row.className = "bg-white border-b dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600";
       row.innerHTML = `
         <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">${product.name}</td>
-        <td class="px-6 py-4">${product.description}</td>
-        <td class="px-6 py-4">${product.category}</td>
-        <td class="px-6 py-4">$${product.price.toFixed(2)}</td>
+        <td class="px-6 py-4">${product.difficulty}</td>
+        <td class="px-6 py-4">${product.platform}</td>
         <td class="px-6 py-4">
-          <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+          <a href="${product.machine}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Machine</a>
+        </td>
+        <td class="px-6 py-4">
+          <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Write-Up</a>
         </td>
       `;
       tableBody.appendChild(row);
