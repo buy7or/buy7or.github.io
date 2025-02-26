@@ -1,22 +1,5 @@
 ---
-interface Item {
-  name: string;
-  difficulty: string;
-  platform:string;
-  link: string;
-  writeup: string;
-}
-
-interface Props {
-  items: Item[];
-}
-
-// Obtén las propiedades pasadas al componente
-const { items } = Astro.props as Props;
-
-const itemsPerPage = 10;
-const totalItems = 1000;
-const totalPages = Math.ceil(totalItems / itemsPerPage);
+const totalItems = 4;
 ---
 
 <article class="flex flex-col items-center justify-center gap-8 text-gray-700 dark:text-gray-300 md:flex-row">
@@ -59,7 +42,16 @@ const totalPages = Math.ceil(totalItems / itemsPerPage);
 <script>
   let currentPage = 1;
   const itemsPerPage = 10;
-  const totalItems = 1000;
+
+  // Lista de productos personalizados
+  const products = [
+    { name: "Laptop HP", description: "15-inch, 8GB RAM", category: "Electronics", price: 750.99 },
+    { name: "Mouse Logitech", description: "Wireless, ergonomic", category: "Accessories", price: 29.99 },
+    { name: "Cafetera Nespresso", description: "Modelo Vertuo, cápsulas", category: "Home", price: 129.50 },
+    { name: "Smartphone Samsung", description: "Galaxy S22, 128GB", category: "Electronics", price: 899.99 }
+  ];
+
+  const totalItems = products.length; // Solo los productos definidos
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   function loadTable() {
@@ -69,13 +61,16 @@ const totalPages = Math.ceil(totalItems / itemsPerPage);
     const end = Math.min(currentPage * itemsPerPage, totalItems);
     
     for (let i = start; i < end; i++) {
+      const product = products[i];
+      if (!product) break; // Evita errores si hay menos productos que el límite de la página
+
       const row = document.createElement("tr");
       row.className = "bg-white border-b dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600";
       row.innerHTML = `
-        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">Product ${i + 1}</td>
-        <td class="px-6 py-4">Random</td>
-        <td class="px-6 py-4">Category X</td>
-        <td class="px-6 py-4">$${(Math.random() * 100).toFixed(2)}</td>
+        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">${product.name}</td>
+        <td class="px-6 py-4">${product.description}</td>
+        <td class="px-6 py-4">${product.category}</td>
+        <td class="px-6 py-4">$${product.price.toFixed(2)}</td>
         <td class="px-6 py-4">
           <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
         </td>
