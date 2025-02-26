@@ -22,6 +22,16 @@ const { description, title } = Astro.props
     <link rel="icon" type="image/svg+xml" href="/icon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+  
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J9SV2GR8FB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-J9SV2GR8FB');
+    </script>
+  
     <ViewTransitions />
   </head>
 
