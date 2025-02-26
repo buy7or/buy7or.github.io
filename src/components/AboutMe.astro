@@ -1,4 +1,19 @@
 ---
+interface Item {
+  name: string;
+  difficulty: string;
+  platform:string;
+  link: string;
+  writeup: string;
+}
+
+interface Props {
+  items: Item[];
+}
+
+// Obtén las propiedades pasadas al componente
+const { items } = Astro.props as Props;
+
 const itemsPerPage = 10;
 const totalItems = 1000;
 const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -9,11 +24,11 @@ const totalPages = Math.ceil(totalItems / itemsPerPage);
     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th class="px-6 py-3">Product Name</th>
-          <th class="px-6 py-3">Color</th>
-          <th class="px-6 py-3">Category</th>
-          <th class="px-6 py-3">Price</th>
-          <th class="px-6 py-3">Action</th>
+          <th class="px-6 py-3">Machine Name</th>
+          <th class="px-6 py-3">Difficulty</th>
+          <th class="px-6 py-3">Platform</th>
+          <th class="px-6 py-3">Link</th>
+          <th class="px-6 py-3">Write-Up</th>
         </tr>
       </thead>
       <tbody id="table-body"></tbody>

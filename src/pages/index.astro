@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro"
-
+import machines from "../data/machines.json"
 import AboutMe from "@/components/AboutMe.astro"
 import Briefcase from "@/components/icons/Briefcase.astro"
 import CodeIcon from "@/components/icons/Code.astro"
@@ -36,7 +36,7 @@ import TitleSection from "@/components/TitleSection.astro"
         <ProfileCheck class="size-8" />
         Machines
       </TitleSection>
-      <AboutMe />
+      <AboutMe items={machines}/>
     </SectionContainer>
   </div>
   </main>
