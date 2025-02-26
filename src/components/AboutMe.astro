@@ -45,10 +45,10 @@ const totalItems = 4;
 
   // Lista de productos personalizados
   const products = [
-    { name: "Laptop HP", difficulty: "15-inch, 8GB RAM", platform: "Electronics", machine: "http" },
-    { name: "Mouse Logitech", difficulty: "Wireless, ergonomic", platform: "Accessories", machine: "http" },
-    { name: "Cafetera Nespresso", difficulty: "Modelo Vertuo, cápsulas", platform: "Home", machine: "http" },
-    { name: "Smartphone Samsung", difficulty: "Galaxy S22, 128GB", platform: "Electronics", machine: "http" }
+    { name: "Laptop HP", difficulty: "15-inch, 8GB RAM", platform: "Electronics", machine: "http", writeup: "http" },
+    { name: "Mouse Logitech", difficulty: "Wireless, ergonomic", platform: "Accessories", machine: "http", writeup: "http" },
+    { name: "Cafetera Nespresso", difficulty: "Modelo Vertuo, cápsulas", platform: "Home", machine: "http", writeup: "http" },
+    { name: "Smartphone Samsung", difficulty: "Galaxy S22, 128GB", platform: "Electronics", machine: "http", writeup: "http" }
   ];
 
   const totalItems = products.length; // Solo los productos definidos
@@ -74,7 +74,7 @@ const totalItems = 4;
           <a href="${product.machine}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Machine</a>
         </td>
         <td class="px-6 py-4">
-          <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Write-Up</a>
+          <a href="${product.writeup}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Write-Up</a>
         </td>
       `;
       tableBody.appendChild(row);
