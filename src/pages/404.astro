@@ -1,0 +1,37 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SectionContainer from "@/components/SectionContainer.astro";
+---
+
+<Layout title="404 - Page not found" description="Page not found">
+  <SectionContainer class="py-16 md:py-36" id="notfound">
+    <main class="px-4 py-16 text-center">
+
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mx-auto mb-4 h-16 w-16 text-red-500">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+      </svg>
+      
+
+      <!-- Título principal -->
+      <h1 class="text-4xl font-bold mb-4">404 - Page Not Found</h1>
+
+      <!-- Texto descriptivo para el usuario -->
+      <p class="mb-8 text-gray-300">
+        We can't seem to find the page you're looking for.
+        It might have been removed, renamed, or didn't exist in the first place.
+      </p>
+
+      <!-- Botón / enlace principal de retorno al home -->
+      <a
+  href="/"
+  target="_blank"
+  rel="noopener noreferrer"
+  role="link"
+  class="inline-flex items-center justify-center gap-2 px-4 py-1 text-gray-800 transition bg-gray-100 border border-gray-300 rounded-full dark:bg-gray-800 dark:border-gray-600 dark:text-white focus-visible:ring-yellow-500/80 text-md hover:bg-gray-900 hover:border-gray-700 hover:text-white dark:hover:bg-gray-100 dark:hover:border-gray-300 dark:hover:text-black group max-w-fit focus:outline-none focus-visible:outline-none focus-visible:ring focus-visible:ring-white focus-visible:ring-offset-2 active:bg-black"
+>
+  Back to Home
+</a>
+    </main>
+  </SectionContainer>
+</Layout>
