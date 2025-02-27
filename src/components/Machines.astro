@@ -1,8 +1,6 @@
----
----
 <article class="flex flex-col items-center justify-center gap-8 text-gray-700 dark:text-gray-300">
   <div class="w-full max-w-6xl px-4">
-    <!-- Campo de búsqueda -->
+    <!-- Campo de búsqueda para filtrar por nombre -->
     <input
       type="text"
       id="search"
@@ -15,8 +13,54 @@
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th class="px-6 py-3">Machine Name</th>
-            <th class="px-6 py-3">Difficulty</th>
-            <th class="px-6 py-3">Platform</th>
+            <!-- Columna Difficulty con dropdown -->
+            <th class="px-6 py-3 relative">
+              <button id="difficulty-toggle" class="flex items-center focus:outline-none cursor-pointer">
+                <span id="difficulty-label">DIFFICULTY</span>
+                <svg class="ml-1 w-4 h-4 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <!-- Opciones del dropdown de Difficulty -->
+              <div id="difficulty-options" class="absolute hidden mt-2 w-32 bg-white dark:bg-gray-700 border rounded shadow-lg z-10">
+                <button data-value="" class="difficulty-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                  Todos
+                </button>
+                <button data-value="Easy" class="difficulty-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                  Easy
+                </button>
+                <button data-value="Medium" class="difficulty-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                  Medium
+                </button>
+                <button data-value="Hard" class="difficulty-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                  Hard
+                </button>
+              </div>
+            </th>
+            <!-- Columna Platform con dropdown -->
+            <th class="px-6 py-3 relative">
+              <button id="platform-toggle" class="flex items-center focus:outline-none cursor-pointer">
+                <span id="platform-label">PLATFORM</span>
+                <svg class="ml-1 w-4 h-4 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <!-- Opciones del dropdown de Platform -->
+              <div id="platform-options" class="absolute hidden mt-2 w-40 bg-white dark:bg-gray-700 border rounded shadow-lg z-10">
+                <button data-value="" class="platform-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                  Todos
+                </button>
+                <button data-value="Hack The Box" class="platform-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                  Hack The Box
+                </button>
+                <button data-value="Vulnhub" class="platform-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                  Vulnhub
+                </button>
+                <button data-value="DockerLabs" class="platform-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                  DockerLabs
+                </button>
+              </div>
+            </th>
             <th class="px-6 py-3">Link</th>
             <th class="px-6 py-3">Write-Up</th>
           </tr>
@@ -49,7 +93,9 @@
 
 <script>
   let currentPage = 1;
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
+  let selectedDifficulty = "";
+  let selectedPlatform = "";
 
   // Lista de productos personalizados
   const products = [
@@ -59,12 +105,24 @@
     { name: "Mercury", difficulty: "Easy", platform: "Vulnhub", machine: "https://www.vulnhub.com/entry/the-planets-mercury,544/", writeup: "http" }
   ];
 
-  // Almacena los productos filtrados, inicialmente todos
   let filteredProducts = products;
 
-  // Actualiza el total de items en la UI
   function updateTotalItems() {
     document.getElementById("total-items").textContent = filteredProducts.length;
+  }
+
+  // Filtra productos según nombre, difficulty y platform
+  function filterProducts() {
+    const searchQuery = document.getElementById("search").value.toLowerCase();
+    filteredProducts = products.filter(product => {
+      const matchesName = product.name.toLowerCase().includes(searchQuery);
+      const matchesDifficulty = selectedDifficulty === "" || product.difficulty === selectedDifficulty;
+      const matchesPlatform = selectedPlatform === "" || product.platform === selectedPlatform;
+      return matchesName && matchesDifficulty && matchesPlatform;
+    });
+    currentPage = 1;
+    updateTotalItems();
+    loadTable();
   }
 
   function loadTable() {
@@ -95,21 +153,53 @@
       tableBody.appendChild(row);
     }
 
-    // Actualiza el rango de elementos mostrados
     document.getElementById("page-range").textContent = `${totalItems === 0 ? 0 : start + 1}-${end}`;
-    // Habilita o deshabilita los botones según la página actual
     document.getElementById("prev-page").disabled = currentPage === 1;
     document.getElementById("next-page").disabled = currentPage === totalPages || totalPages === 0;
   }
 
-  // Búsqueda: filtra productos y resetea la página actual
-  document.getElementById("search").addEventListener("input", function() {
-    const query = this.value.toLowerCase();
-    filteredProducts = products.filter(product => product.name.toLowerCase().includes(query));
-    currentPage = 1;
-    updateTotalItems();
-    loadTable();
+  // Dropdown Difficulty
+  document.getElementById("difficulty-toggle").addEventListener("click", function(e) {
+    e.stopPropagation();
+    document.getElementById("difficulty-options").classList.toggle("hidden");
   });
+  document.querySelectorAll(".difficulty-option").forEach(option => {
+    option.addEventListener("click", function(e) {
+      selectedDifficulty = this.getAttribute("data-value");
+      document.getElementById("difficulty-label").textContent = selectedDifficulty === "" ? "Difficulty" : selectedDifficulty;
+      document.getElementById("difficulty-options").classList.add("hidden");
+      filterProducts();
+    });
+  });
+
+  // Dropdown Platform
+  document.getElementById("platform-toggle").addEventListener("click", function(e) {
+    e.stopPropagation();
+    document.getElementById("platform-options").classList.toggle("hidden");
+  });
+  document.querySelectorAll(".platform-option").forEach(option => {
+    option.addEventListener("click", function(e) {
+      selectedPlatform = this.getAttribute("data-value");
+      document.getElementById("platform-label").textContent = selectedPlatform === "" ? "Platform" : selectedPlatform;
+      document.getElementById("platform-options").classList.add("hidden");
+      filterProducts();
+    });
+  });
+
+  // Cierra ambos dropdowns al hacer clic fuera
+  document.addEventListener("click", function(e) {
+    const diffDropdown = document.getElementById("difficulty-options");
+    const platDropdown = document.getElementById("platform-options");
+    if (!diffDropdown.contains(e.target) && !document.getElementById("difficulty-toggle").contains(e.target)) {
+      diffDropdown.classList.add("hidden");
+    }
+    if (!platDropdown.contains(e.target) && !document.getElementById("platform-toggle").contains(e.target)) {
+      platDropdown.classList.add("hidden");
+    }
+  });
+
+  // Listener para el campo de búsqueda
+  document.getElementById("search").addEventListener("input", filterProducts);
 
   document.getElementById("prev-page").addEventListener("click", () => {
     if (currentPage > 1) {
