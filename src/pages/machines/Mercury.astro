@@ -1,0 +1,132 @@
+---
+import Code  from "../../components/Code.astro";
+import Correct from "../../components/Correct.astro";
+import Info from "../../components/icons/Info.astro";
+import Section from "../../components/SectionContainer.astro";
+import SectionText from "../../components/SectionText.astro";
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout 
+title="Vulnhub - Mercury Writeup"
+description="Vulnhub Mercury Writeup "
+>
+    <main class="px-4">
+        <Section class="py-44 pb-12 flex justify-center items-center">
+            <img class="rounded-full size-32 border-4 border-white
+            hover:scale-105 transition" src="/images/machines/Mercury/icon.png"/>
+        </Section>
+        <Section>
+            <h2 class="text-white text-3xl lg:text-4xl font-bold flex flex-row gap-x-2 pb-8">
+                <Info class="w-10 h-10 hover:scale-105 transition"/>Mercury
+            </h2>
+            <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Author: <span class="font-normal">SirFlash</span></h4>
+            <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Level: <span class="font-normal">Beginner</span></h4>
+            <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Series: 
+                <a href="https://www.vulnhub.com/series/the-planets,362/" class="font-normal text-blue-400 text-xl lg:text-xl text-wrap hover:underline">
+                    The Planets
+                </a>
+            </h4>
+
+            <a href="https://www.vulnhub.com/entry/the-planets-mercury,544/" class="text-blue-400 text-xl lg:text-xl text-wrap hover:underline">
+                Machine Link
+            </a>
+            <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pt-12 pb-4">
+                Machine Discovery
+            </h3>
+            <SectionText>
+                The first step is obtaining the ip of the target machine, we will use the command
+                <Code>sudo arp-scan -I wlo1 --localnet --ignoredups</Code>
+                (you should change wlo1 with yours) and we found the ip <span class="text-lg text-green-500">192.168.1.38</span> .
+                <br>
+                <br>
+                Now we try to get the ttl of the machine for figure out the SO. For that, we will use the personal tool 
+                whichSystem.
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/ttl.png"/>
+                <br>
+                We get the ttl 64 so it means the target is a Linux machine
+            </SectionText>
+            <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+                Port Scanning
+            </h3>
+            <SectionText>
+                We scan the ports to see which ones are oppened and which services are running. We use the command 
+                <Code>sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn 192.168.1.38 -oG allPorts</Code> and we get that:
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/portDiscovery.png"/>
+                <br>
+                we check the document created allPorts and we see 
+                <span class="text-lg text-green-500">Ports: 22/open/tcp//ssh///, 8080/open/tcp//http-proxy///</span>
+                We try to see the web http://192.168.1.38:8080/ but we only find this:
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/web.png"/>
+                <br>
+                We utilized the nmap command to explore alternative routes within the web service, using the following command
+                <Code>nmap --script http-enum -p8080 192.168.1.38 -oN webScan</Code>
+                and we find the route <Correct>/robots.txt: Robots file</Correct> .
+                <br>
+                We visit the route 192.169.1.38/robots.txt and we find nothing. We start digging and I tried to visit the route
+                192.168.1.38:8080/* and we find 
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/notFound.png"/>
+                <br>
+                So we visit the route <Correct>/mercuryfacts</Correct>.
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/facts.png"/>
+                <br>
+                We go to the Todo List but we found nothing important, so click on Load a fact and we go to <Correct>/mercuryfacts/1</Correct>
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/fact.png"/>
+                <br>
+                We start changing the number of the url and we see that we can visit other facts, we start trying sql sentences like 
+                <span class="font-bold">1=1 </span> or <span class="font-bold">1=2</span> and we see that the response changes so we try to 
+                use slmap to discover the database.We use the command <Code>sqlmap -u http://192.168.1.38:8080/mercuryfacts/ --dbs --batch</Code>
+                and we get the databases
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/db.png"/>
+                <br>
+                So we will try to get everything from the database <Correct>mercury</Correct> with the command 
+                <Code>sqlmap -u http://192.168.1.38:8080/mercuryfacts/ -D mercury --all --batch</Code>
+                <br>
+                We got some data but the important one is the users table where we get the username: 
+                <Correct>webmaster</Correct> and the password <Correct>mercuryisthesizeof0.056Earths</Correct>
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/table.png"/>
+                <br>
+                We connect to the target with ssh webmaster@192.168.1.38 and password mercuryisthesizeof0.056Earths and it works. So we
+                got the first flag.
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/flag1.png"/>
+                <br>
+            </SectionText>
+            <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+                Privilege Escalation
+            </h3>
+            <SectionText>
+                We try to list the root permissions<Code>sudo -l</Code> but we can't execute it so we try <Code>{'find / -perm -u=s -type f 2>/dev/null'}</Code>
+                but we dont find anything interesting. We go into the directory mercury_proj and we find the file notex.txt so we 
+                try to read it
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/cat.png"/>
+                <br>
+                We se the username webmaster and a new one <Correct>linuxmaster</Correct> that we have already used and linuxmaster followed by a strange chain that we can deduce that is 
+                in base64 so we convert it into plain text and we obtain the text <Correct>mercurymeandiameteris4880km</Correct>. We try
+                to connect now via ssh with the new user and password and it works. 
+                <br>
+                We try to list the sudo permissions of the new user again with the command <Code>sudo -l</Code> and now we find 
+                <Correct>SETENV and the file /usr/bin/check_syslog.sh</Correct>. SETENV allows us to modify certain environment variables, so 
+                we read the the script that we can execute as sudo and we see that is using the command <Code>tail</Code>. We can create 
+                an script called tail that gives us a bash and as we can modify the PATH where the check_syslog.sh is gonna search the command tail,
+                we can redirect it to our script to obtain a bash as root thanks to the permissions that we have.
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/root.png"/>
+                <br>
+                And it works perfect, as root we go to the directory root and we list the last flag.
+                <br>
+                <img class="pt-4" src="/images/machines/Mercury/flag2.png"/>
+                <br>
+            </SectionText>
+        </Section>
+    </main>
+</Layout>

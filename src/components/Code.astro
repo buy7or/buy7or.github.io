@@ -1,0 +1,47 @@
+---
+---
+<div class="terminal-container bg-gray-800 text-white rounded p-4 overflow-auto terminal-code text-sm leading-tight mt-4 mb-4">
+
+        <code >
+<slot/>
+        </code>
+    
+</div>
+
+<style>
+    .terminal-container {
+        font-family: 'Courier New', Courier, monospace;
+        border: 1px solid #4A5568; /* Color del borde */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-height: 300px; /* Altura máxima antes de mostrar scroll vertical */
+        max-width: 100%; /* Anchura máxima antes de mostrar scroll horizontal */
+        overflow: auto; /* Permite tanto scroll horizontal como vertical */
+    }
+
+    .terminal-code {
+        background-color: #2D3748; /* Fondo del terminal */
+        padding: 16px;
+        border-radius: 5px;
+        color: #F7FAFC; /* Color de texto */
+        white-space: pre; /* Mantiene los espacios y saltos de línea */
+    }
+
+    .terminal-code::before {
+        content: '$ ';
+        color: #9F7AEA; /* Color del prompt */
+    }
+
+    .terminal-code::after {
+        content: ''; /* Esto permite que el contenido termine en una nueva línea */
+        display: block;
+    }
+
+    /* Colores adicionales para resaltar comandos y salida */
+    .terminal-code .command {
+        color: #63B3ED; /* Color de los comandos */
+    }
+
+    .terminal-code .output {
+        color: #F6E05E; /* Color de la salida */
+    }
+</style>
