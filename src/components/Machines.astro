@@ -166,7 +166,7 @@
   document.querySelectorAll(".difficulty-option").forEach(option => {
     option.addEventListener("click", function(e) {
       selectedDifficulty = this.getAttribute("data-value");
-      document.getElementById("difficulty-label").textContent = selectedDifficulty === "" ? "Difficulty" : selectedDifficulty;
+      document.getElementById("difficulty-label").textContent = selectedDifficulty === "" ? "DIFFICULTY" : selectedDifficulty;
       document.getElementById("difficulty-options").classList.add("hidden");
       filterProducts();
     });
@@ -180,7 +180,7 @@
   document.querySelectorAll(".platform-option").forEach(option => {
     option.addEventListener("click", function(e) {
       selectedPlatform = this.getAttribute("data-value");
-      document.getElementById("platform-label").textContent = selectedPlatform === "" ? "Platform" : selectedPlatform;
+      document.getElementById("platform-label").textContent = selectedPlatform === "" ? "PLATFORM" : selectedPlatform;
       document.getElementById("platform-options").classList.add("hidden");
       filterProducts();
     });
