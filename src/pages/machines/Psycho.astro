@@ -9,99 +9,97 @@ import Code from "../../components/Code.astro";
 <Layout title="Psycho DockerLabs Writeup" description="Writeup de Psycho DockerLabs">
   <main class="px-4">
     <Section class="py-44 pb-12 flex justify-center items-center">
-      <img class="rounded-full size-32 border-4 border-white
-      hover:scale-105 transition" src="/images/machines/Psycho/icon.webp"/>
+      <img class="rounded-full size-32 border-4 border-white hover:scale-105 transition" src="/images/machines/Psycho/icon.webp"/>
     </Section>
     <Section>
       <h2 class="text-white text-3xl lg:text-4xl font-bold flex flex-row gap-x-2 pb-8">
           <Info class="w-10 h-10 hover:scale-105 transition"/>Psycho
       </h2>
-      <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Author: <span class="font-normal">luisillo_o</span></h4>
-      <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Level: <span class="font-normal">Easy</span></h4>
+      <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Autor: <span class="font-normal">luisillo_o</span></h4>
+      <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Nivel: <span class="font-normal">Fácil</span></h4>
       <a href="https://dockerlabs.es/" class="text-blue-400 text-xl lg:text-xl text-wrap hover:underline">
           DockerLabs
       </a>
       <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pt-12 pb-4">
-        Escaneo de puertos
-    </h3>
-    <SectionText>
-      Realizamos un escaneo de puertos y observamos que están abiertos el 80 y el 22 proporcionando <strong>ssh</strong> y <strong>http</strong>.
-      <Code>nmap -Pn -sS 172.17.0.2</Code>
-      Listamos las versiones pero no obtenemos información relevante ni vulnerable.
-    </SectionText>
-    <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
-      Observamos el puerto 80
-    </h3>
+        Escaneo de Puertos
+      </h3>
       <SectionText>
-        No metemos en la web http://172.17.0.2 a observar y no funciona ninguno de los links, además observamos que abajo aparece ¡ERROR¡.
+        Se realizó un escaneo de puertos en la IP objetivo, identificándose que los puertos <strong>80</strong> y <strong>22</strong> se encuentran abiertos, lo que indica la disponibilidad de servicios HTTP y SSH. Se ejecutó el siguiente comando:
+        <br>
+        <Code>nmap -Pn -sS 172.17.0.2</Code>
+        <br>
+        Posteriormente, se procedió a listar las versiones de los servicios, sin obtener información relevante ni detectar vulnerabilidades conocidas.
+      </SectionText>
+      <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+        Análisis del Servicio HTTP
+      </h3>
+      <SectionText>
+        Al acceder a <code>http://172.17.0.2</code>, se observó que ninguno de los enlaces disponibles respondía correctamente, presentándose un mensaje de !ERROR! en el footer de la página. Se empleó la herramienta <em>dirbuster</em> para realizar un reconocimiento de directorios, lo que arrojó un listado sin relevancia, salvo la presencia del archivo <code>index.php</code>.
         <br><br>
-        Listamos con <em>dirbuster</em> a ver si encontramos algo importante, pero más allá de un directory listing sin importancia e <code>index.php</code> nada más.
+        Dado que se trataba de un archivo PHP, se sospechó que el error podría estar relacionado con la carga de algún recurso. Para investigar esta hipótesis, se utilizó <em>wfuzz</em>. Aunque la mayoría de las respuestas retornaban un código 200, al filtrar estas se descubrió una ruta denominada <code>secret</code> que devolvía un código 500; al acceder a esta ruta, el error desaparecía.
         <br><br>
-        Al tratarse de <code>index.php</code> de PHP, podemos suponer que está intentando cargar algo que produce el error previamente observado, por lo que realizamos un <em>wfuzz</em> para ver si encontramos algo. Todas las respuestas aparentemente son 200, por lo que ocultamos las 200 y nos aparece <code>secret</code> con un 500; y al cargarla, el error desaparece.
+        <img class="pt-4" src="/images/machines/Psycho/wfuzz.png" alt="Captura de wfuzz" />
         <br><br>
-        <img class="pt-4" src="/images/machines/Psycho/wfuzz.png" alt="wfuzz screenshot" />
-        <br><br>
-        Probamos con inyección de comandos sin suerte, pero el listing directories sí mostró algo interesante:
+        Se realizaron pruebas de inyección de comandos sin éxito; sin embargo, el listado de directorios reveló un hallazgo significativo: era posible leer el archivo <code>/etc/passwd</code> mediante la siguiente URL:
         <br>
         <Code>http://172.17.0.2/index.php?secret=/etc/passwd</Code>
-        
-        <img class="pt-4" src="/images/machines/Psycho/reading-passwd.png" alt="reading passwd screenshot" />
         <br><br>
-        Encontramos al usuario <strong>luisillo</strong> y <strong>vaxei</strong>, los cuales podríamos usar para intentar realizar fuerza bruta a SSH.
+        La lectura de dicho archivo permitió identificar a los usuarios <strong>luisillo</strong> y <strong>vaxei</strong>, quienes fueron considerados para un eventual ataque de fuerza bruta sobre el servicio SSH. Tras intentar la técnica con <em>hydra</em> sin éxito, se procedió a examinar el archivo <code>id_rsa</code> ubicado en <code>/home/usuario/.ssh/id_rsa</code>. Mientras que para el usuario <code>luisillo</code> no se obtuvieron resultados, para <code>vaxei</code> se logró extraer la clave privada.
         <br><br>
-        Probamos con <em>hydra</em> sin éxito, por lo que procedemos a leer el archivo <code>id_rsa</code> de los usuarios en <code>/home/usuario/.ssh/id_rsa</code>. Con <code>luisillo</code> no hubo suerte, pero con <code>vaxei</code> sí, obteniendo su private key.
-        <br><br>
-        Guardamos la key en un archivo, le damos permisos:
+        La clave privada fue almacenada en un archivo y se le asignaron los permisos correspondientes mediante:
         <br>
         <Code>chmod 600 vaxei</Code>
-        y nos conectamos mediante:
+        <br>
+        Posteriormente, se estableció una conexión SSH utilizando:
         <br>
         <Code>sudo ssh -i vaxei vaxei@172.17.0.2</Code>
-        ¡Y estamos dentro!
         <br>
-        <img class="pt-4" src="/images/machines/Psycho/terminal.png" alt="terminal screenshot" />
-    </SectionText>
-    <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
-      Escalada de privilegios
-    </h3>
-    <SectionText>
-      Listamos y encontramos un <code>file.txt</code> sin ningún contenido importante.
-        <br><br>
-        Verificamos los permisos de ejecución disponibles para el usuario <code>vaxei</code> con el comando:
+        Confirmando el acceso al sistema:
+        <br>
+        <img class="pt-4" src="/images/machines/Psycho/terminal.png" alt="Captura de terminal" />
+      </SectionText>
+      <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+        Escalada de Privilegios
+      </h3>
+      <SectionText>
+        Durante la fase de escalada de privilegios se identificó un archivo denominado <code>file.txt</code> que, tras su revisión, no contenía información relevante. Se verificaron los permisos del usuario <code>vaxei</code> con el comando:
         <br>
         <Code>sudo -l</Code>
-        Observamos que podemos utilizar <em>perl</em> como el usuario <code>luisillo</code> sin necesidad de contraseña. Mediante perl es posible obtener una shell con el siguiente comando:
+        <br>
+        Este análisis reveló la posibilidad de ejecutar <em>perl</em> como el usuario <code>luisillo</code> sin requerir contraseña. Aprovechando esta configuración, se ejecutó el siguiente comando para obtener una shell:
         <br>
         <Code>sudo -u luisillo /usr/bin/perl -e 'exec "/bin/bash";'</Code>
-        
-        Una vez como <code>luisillo</code>, listamos nuevamente los permisos y vemos lo siguiente:
-        <br>
-        <img class="pt-4" src="/images/machines/Psycho/permisos.png" alt="permisos screenshot" />
-        <br>
-        Listamos el contenido del archivo <code>/opt/paw.py</code>:
-        <img class="pt-4" src="/images/machines/Psycho/paw.png" alt="paw.py screenshot" />
-        <br>
-        Dado que no podemos editar el contenido de este archivo ni de sus librerías, vamos a intentar un <strong>python-library-hijacking</strong>. Aunque podríamos eliminar <code>paw.py</code> y crear uno nuevo, optamos por lo siguiente:
-    </SectionText>
-    <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
-      Python-Library-Hijacking
-    </h3>
-    <SectionText>
-      Para realizar el hijacking, crea en la carpeta <code>/opt</code> el archivo <code>subprocess.py</code> con la intención de que se utilice en lugar de la librería legítima.
         <br><br>
-        El contenido del archivo debe ser:
+        Una vez obtenido el acceso como <code>luisillo</code>, se volvió a listar los permisos disponibles, obteniéndose la siguiente información:
+        <br>
+        <img class="pt-4" src="/images/machines/Psycho/permisos.png" alt="Captura de permisos" />
+        <br><br>
+        A continuación, se inspeccionó el contenido del archivo <code>/opt/paw.py</code>:
+        <br>
+        <img class="pt-4" src="/images/machines/Psycho/paw.png" alt="Captura de paw.py" />
+        <br><br>
+        Dado que no era posible modificar el contenido del archivo ni de sus librerías asociadas, se optó por implementar una técnica de <strong>Python Library Hijacking</strong> para lograr la escalada de privilegios.
+      </SectionText>
+      <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+        Python Library Hijacking
+      </h3>
+      <SectionText>
+        Para implementar la técnica de Python Library Hijacking, se creó en el directorio <code>/opt</code> un archivo denominado <code>subprocess.py</code>, con el objetivo de que éste reemplace a la biblioteca legítima. El contenido del archivo es el siguiente:
         <br>
         <Code>
 import os<br>
 os.system('bash')
         </Code>
-        Le damos permisos de ejecución:
+        Posteriormente, se asignaron los permisos de ejecución necesarios mediante:
         <br>
         <Code>chmod +x subprocess.py</Code>
-        y lo ejecutamos con:
+        <br>
+        Finalmente, se ejecutó el archivo <code>paw.py</code> utilizando:
         <br>
         <Code>sudo /usr/bin/python3 /opt/paw.py</Code>
-        Esto nos proporcionará una shell como root.
-    </SectionText>
+        <br>
+        Esta acción permitió obtener una shell con privilegios de root.
+      </SectionText>
+    </Section>
   </main>
 </Layout>
