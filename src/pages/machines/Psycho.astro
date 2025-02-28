@@ -8,98 +8,231 @@ import Code from "../../components/Code.astro";
 
 <Layout title="Psycho DockerLabs Writeup" description="Writeup de Psycho DockerLabs">
   <main class="px-4">
-    <Section class="py-44 pb-12 flex justify-center items-center">
-      <img class="rounded-full size-32 border-4 border-white hover:scale-105 transition" src="/images/machines/Psycho/icon.webp"/>
-    </Section>
-    <Section>
-      <h2 class="text-white text-3xl lg:text-4xl font-bold flex flex-row gap-x-2 pb-8">
-          <Info class="w-10 h-10 hover:scale-105 transition"/>Psycho
-      </h2>
-      <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Autor: <span class="font-normal">luisillo_o</span></h4>
-      <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">Nivel: <span class="font-normal">Fácil</span></h4>
-      <a href="https://dockerlabs.es/" class="text-blue-400 text-xl lg:text-xl text-wrap hover:underline">
+    <!-- Botón para cambiar de idioma -->
+    <div class="flex justify-end p-4">
+      <button id="toggleLang" 
+      class="inline-flex items-center justify-center gap-2 px-4 py-1 text-gray-800 transition bg-gray-100 border border-gray-300 rounded-full dark:bg-gray-800 dark:border-gray-600 dark:text-white focus-visible:ring-yellow-500/80 text-md hover:bg-gray-900 hover:border-gray-700 hover:text-white dark:hover:bg-gray-100 dark:hover:border-gray-300 dark:hover:text-black group max-w-fit focus:outline-none focus-visible:outline-none focus-visible:ring focus-visible:ring-white focus-visible:ring-offset-2 active:bg-black">
+        Switch to English
+      </button>
+    </div>
+
+    <!-- Contenido en español -->
+    <div id="lang-es">
+      <Section class="py-44 pb-12 flex justify-center items-center">
+        <img class="rounded-full size-32 border-4 border-white hover:scale-105 transition" src="/images/machines/Psycho/icon.webp" />
+      </Section>
+      <Section>
+        <h2 class="text-white text-3xl lg:text-4xl font-bold flex flex-row gap-x-2 pb-8">
+          <Info class="w-10 h-10 hover:scale-105 transition" />Psycho
+        </h2>
+        <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">
+          Autor: <span class="font-normal">luisillo_o</span>
+        </h4>
+        <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">
+          Nivel: <span class="font-normal">Fácil</span>
+        </h4>
+        <a href="https://dockerlabs.es/" class="text-blue-400 text-xl lg:text-xl text-wrap hover:underline">
           DockerLabs
-      </a>
-      <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pt-12 pb-4">
-        Escaneo de Puertos
-      </h3>
-      <SectionText>
-        Se realizó un escaneo de puertos en la IP objetivo, identificándose que los puertos <strong>80</strong> y <strong>22</strong> se encuentran abiertos, lo que indica la disponibilidad de servicios HTTP y SSH. Se ejecutó el siguiente comando:
-        <br>
-        <Code>nmap -Pn -sS 172.17.0.2</Code>
-        <br>
-        Posteriormente, se procedió a listar las versiones de los servicios, sin obtener información relevante ni detectar vulnerabilidades conocidas.
-      </SectionText>
-      <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
-        Análisis del Servicio HTTP
-      </h3>
-      <SectionText>
-        Al acceder a <code>http://172.17.0.2</code>, se observó que ninguno de los enlaces disponibles respondía correctamente, presentándose un mensaje de !ERROR! en el footer de la página. Se empleó la herramienta <em>dirbuster</em> para realizar un reconocimiento de directorios, lo que arrojó un listado sin relevancia, salvo la presencia del archivo <code>index.php</code>.
-        <br><br>
-        Dado que se trataba de un archivo PHP, se sospechó que el error podría estar relacionado con la carga de algún recurso. Para investigar esta hipótesis, se utilizó <em>wfuzz</em>. Aunque la mayoría de las respuestas retornaban un código 200, al filtrar estas se descubrió una ruta denominada <code>secret</code> que devolvía un código 500; al acceder a esta ruta, el error desaparecía.
-        <br><br>
-        <img class="pt-4" src="/images/machines/Psycho/wfuzz.png" alt="Captura de wfuzz" />
-        <br><br>
-        Se realizaron pruebas de inyección de comandos sin éxito; sin embargo, el listado de directorios reveló un hallazgo significativo: era posible leer el archivo <code>/etc/passwd</code> mediante la siguiente URL:
-        <br>
-        <Code>http://172.17.0.2/index.php?secret=/etc/passwd</Code>
-        <br><br>
-        La lectura de dicho archivo permitió identificar a los usuarios <strong>luisillo</strong> y <strong>vaxei</strong>, quienes fueron considerados para un eventual ataque de fuerza bruta sobre el servicio SSH. Tras intentar la técnica con <em>hydra</em> sin éxito, se procedió a examinar el archivo <code>id_rsa</code> ubicado en <code>/home/usuario/.ssh/id_rsa</code>. Mientras que para el usuario <code>luisillo</code> no se obtuvieron resultados, para <code>vaxei</code> se logró extraer la clave privada.
-        <br><br>
-        La clave privada fue almacenada en un archivo y se le asignaron los permisos correspondientes mediante:
-        <br>
-        <Code>chmod 600 vaxei</Code>
-        <br>
-        Posteriormente, se estableció una conexión SSH utilizando:
-        <br>
-        <Code>sudo ssh -i vaxei vaxei@172.17.0.2</Code>
-        <br>
-        Confirmando el acceso al sistema:
-        <br>
-        <img class="pt-4" src="/images/machines/Psycho/terminal.png" alt="Captura de terminal" />
-      </SectionText>
-      <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
-        Escalada de Privilegios
-      </h3>
-      <SectionText>
-        Durante la fase de escalada de privilegios se identificó un archivo denominado <code>file.txt</code> que, tras su revisión, no contenía información relevante. Se verificaron los permisos del usuario <code>vaxei</code> con el comando:
-        <br>
-        <Code>sudo -l</Code>
-        <br>
-        Este análisis reveló la posibilidad de ejecutar <em>perl</em> como el usuario <code>luisillo</code> sin requerir contraseña. Aprovechando esta configuración, se ejecutó el siguiente comando para obtener una shell:
-        <br>
-        <Code>sudo -u luisillo /usr/bin/perl -e 'exec "/bin/bash";'</Code>
-        <br><br>
-        Una vez obtenido el acceso como <code>luisillo</code>, se volvió a listar los permisos disponibles, obteniéndose la siguiente información:
-        <br>
-        <img class="pt-4" src="/images/machines/Psycho/permisos.png" alt="Captura de permisos" />
-        <br><br>
-        A continuación, se inspeccionó el contenido del archivo <code>/opt/paw.py</code>:
-        <br>
-        <img class="pt-4" src="/images/machines/Psycho/paw.png" alt="Captura de paw.py" />
-        <br><br>
-        Dado que no era posible modificar el contenido del archivo ni de sus librerías asociadas, se optó por implementar una técnica de <strong>Python Library Hijacking</strong> para lograr la escalada de privilegios.
-      </SectionText>
-      <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
-        Python Library Hijacking
-      </h3>
-      <SectionText>
-        Para implementar la técnica de Python Library Hijacking, se creó en el directorio <code>/opt</code> un archivo denominado <code>subprocess.py</code>, con el objetivo de que éste reemplace a la biblioteca legítima. El contenido del archivo es el siguiente:
-        <br>
-        <Code>
-import os<br>
+        </a>
+        <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pt-12 pb-4">
+          Escaneo de Puertos
+        </h3>
+        <SectionText>
+          Se realizó un escaneo de puertos en la IP objetivo, identificándose que los puertos <strong>80</strong> y <strong>22</strong> se encuentran abiertos, lo que indica la disponibilidad de servicios HTTP y SSH. Se ejecutó el siguiente comando:
+          <br />
+          <Code>nmap -Pn -sS 172.17.0.2</Code>
+          <br />
+          Posteriormente, se procedió a listar las versiones de los servicios, sin obtener información relevante ni detectar vulnerabilidades conocidas.
+        </SectionText>
+        <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+          Análisis del Servicio HTTP
+        </h3>
+        <SectionText>
+          Al acceder a <code>http://172.17.0.2</code>, se observó que ninguno de los enlaces disponibles respondía correctamente, presentándose un mensaje de error. Se empleó la herramienta <em>dirbuster</em> para realizar un reconocimiento de directorios, lo que arrojó un listado sin relevancia, salvo la presencia del archivo <code>index.php</code>.
+          <br /><br />
+          Dado que se trataba de un archivo PHP, se sospechó que el error podría estar relacionado con la carga de algún recurso. Para investigar esta hipótesis, se utilizó <em>wfuzz</em>. Aunque la mayoría de las respuestas retornaban un código 200, al filtrar estas se descubrió una ruta denominada <code>secret</code> que devolvía un código 500; al acceder a esta ruta, el error desaparecía.
+          <br /><br />
+          <img class="pt-4" src="/images/machines/Psycho/wfuzz.png" alt="Captura de wfuzz" />
+          <br /><br />
+          Se realizaron pruebas de inyección de comandos sin éxito; sin embargo, el listado de directorios reveló un hallazgo significativo: era posible leer el archivo <code>/etc/passwd</code> mediante la siguiente URL:
+          <br />
+          <Code>http://172.17.0.2/index.php?secret=/etc/passwd</Code>
+          <br /><br />
+          La lectura de dicho archivo permitió identificar a los usuarios <strong>luisillo</strong> y <strong>vaxei</strong>, quienes fueron considerados para un eventual ataque de fuerza bruta sobre el servicio SSH. Tras intentar la técnica con <em>hydra</em> sin éxito, se procedió a examinar el archivo <code>id_rsa</code> ubicado en <code>/home/usuario/.ssh/id_rsa</Code>. Mientras que para el usuario <code>luisillo</code> no se obtuvieron resultados, para <code>vaxei</code> se logró extraer la clave privada.
+          <br /><br />
+          La clave privada fue almacenada en un archivo y se le asignaron los permisos correspondientes mediante:
+          <br />
+          <Code>chmod 600 vaxei</Code>
+          <br />
+          Posteriormente, se estableció una conexión SSH utilizando:
+          <br />
+          <Code>sudo ssh -i vaxei vaxei@172.17.0.2</Code>
+          <br />
+          Confirmando el acceso al sistema:
+          <br />
+          <img class="pt-4" src="/images/machines/Psycho/terminal.png" alt="Captura de terminal" />
+        </SectionText>
+        <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+          Escalada de Privilegios
+        </h3>
+        <SectionText>
+          Durante la fase de escalada de privilegios se identificó un archivo denominado <code>file.txt</code> que, tras su revisión, no contenía información relevante. Se verificaron los permisos del usuario <code>vaxei</code> con el comando:
+          <br />
+          <Code>sudo -l</Code>
+          <br />
+          Este análisis reveló la posibilidad de ejecutar <em>perl</em> como el usuario <code>luisillo</code> sin requerir contraseña. Aprovechando esta configuración, se ejecutó el siguiente comando para obtener una shell:
+          <br />
+          <Code>sudo -u luisillo /usr/bin/perl -e 'exec "/bin/bash";'</Code>
+          <br /><br />
+          Una vez obtenido el acceso como <code>luisillo</code>, se volvió a listar los permisos disponibles, obteniéndose la siguiente información:
+          <br />
+          <img class="pt-4" src="/images/machines/Psycho/permisos.png" alt="Captura de permisos" />
+          <br /><br />
+          A continuación, se inspeccionó el contenido del archivo <code>/opt/paw.py</code>:
+          <br />
+          <img class="pt-4" src="/images/machines/Psycho/paw.png" alt="Captura de paw.py" />
+          <br /><br />
+          Dado que no era posible modificar el contenido del archivo ni de sus librerías asociadas, se optó por implementar una técnica de <strong>Python Library Hijacking</strong> para lograr la escalada de privilegios.
+        </SectionText>
+        <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+          Python Library Hijacking
+        </h3>
+        <SectionText>
+          Para implementar la técnica de Python Library Hijacking, se creó en el directorio <code>/opt</code> un archivo denominado <code>subprocess.py</code>, con el objetivo de que éste reemplace a la biblioteca legítima. El contenido del archivo es el siguiente:
+          <br />
+          <Code>
+import os<br />
 os.system('bash')
-        </Code>
-        Posteriormente, se asignaron los permisos de ejecución necesarios mediante:
-        <br>
-        <Code>chmod +x subprocess.py</Code>
-        <br>
-        Finalmente, se ejecutó el archivo <code>paw.py</code> utilizando:
-        <br>
-        <Code>sudo /usr/bin/python3 /opt/paw.py</Code>
-        <br>
-        Esta acción permitió obtener una shell con privilegios de root.
-      </SectionText>
-    </Section>
+          </Code>
+          Posteriormente, se asignaron los permisos de ejecución necesarios mediante:
+          <br />
+          <Code>chmod +x subprocess.py</Code>
+          <br />
+          Finalmente, se ejecutó el archivo <code>paw.py</code> utilizando:
+          <br />
+          <Code>sudo /usr/bin/python3 /opt/paw.py</Code>
+          <br />
+          Esta acción permitió obtener una shell con privilegios de root.
+        </SectionText>
+      </Section>
+    </div>
+
+    <!-- Contenido en inglés -->
+    <div id="lang-en" style="display: none;">
+      <Section class="py-44 pb-12 flex justify-center items-center">
+        <img class="rounded-full size-32 border-4 border-white hover:scale-105 transition" src="/images/machines/Psycho/icon.webp" />
+      </Section>
+      <Section>
+        <h2 class="text-white text-3xl lg:text-4xl font-bold flex flex-row gap-x-2 pb-8">
+          <Info class="w-10 h-10 hover:scale-105 transition" />Psycho
+        </h2>
+        <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">
+          Author:<span class="font-normal">luisillo_o</span>
+        </h4>
+        <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">
+          Level: <span class="font-normal">Easy</span>
+        </h4>
+        <a href="https://dockerlabs.es/" class="text-blue-400 text-xl lg:text-xl text-wrap hover:underline">
+          DockerLabs
+        </a>
+        <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pt-12 pb-4">
+          Port Scanning
+        </h3>
+        <SectionText>
+          A port scan was performed on the target IP, revealing that ports <strong>80</strong> and <strong>22</strong> are open, indicating the availability of HTTP and SSH services. The following command was executed:
+          <br />
+          <Code>nmap -Pn -sS 172.17.0.2</Code>
+          <br />
+          Subsequently, service version enumeration was attempted; however, no significant or vulnerable information was found.
+        </SectionText>
+        <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+          HTTP Service Analysis
+        </h3>
+        <SectionText>
+          Upon accessing <code>http://172.17.0.2</code>, it was observed that none of the available links responded correctly and an error message was displayed. The tool <em>dirbuster</em> was used to enumerate directories, which revealed an unremarkable directory listing aside from the presence of the <code>index.php</code> file.
+          <br /><br />
+          Since this is a PHP file, it was suspected that the error might be due to a missing resource. To further investigate, <em>wfuzz</em> was employed. Although most responses returned a 200 status code, filtering them revealed a route called <code>secret</code> that returned a 500 status code; upon accessing it, the error disappeared.
+          <br /><br />
+          <img class="pt-4" src="/images/machines/Psycho/wfuzz.png" alt="wfuzz screenshot" />
+          <br /><br />
+          Command injection tests were attempted without success; however, directory listing uncovered a significant finding: the <code>/etc/passwd</code> file could be read via the following URL:
+          <br />
+          <Code>http://172.17.0.2/index.php?secret=/etc/passwd</Code>
+          <br /><br />
+          Reading this file revealed the users <strong>luisillo</strong> and <strong>vaxei</strong>, who were then considered for an SSH brute-force attack. After unsuccessful attempts using <em>hydra</em>, the <code>id_rsa</code> file located at <code>/home/usuario/.ssh/id_rsa</code> was examined. While no success was achieved for <code>luisillo</code>, the private key for <code>vaxei</code> was successfully extracted.
+          <br /><br />
+          The private key was saved to a file with the appropriate permissions set using:
+          <br />
+          <Code>chmod 600 vaxei</Code>
+          <br />
+          An SSH connection was then established using:
+          <br />
+          <Code>sudo ssh -i vaxei vaxei@172.17.0.2</Code>
+          <br />
+          Confirming access to the system:
+          <br />
+          <img class="pt-4" src="/images/machines/Psycho/terminal.png" alt="Terminal screenshot" />
+        </SectionText>
+        <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+          Privilege Escalation
+        </h3>
+        <SectionText>
+          During the privilege escalation phase, a file named <code>file.txt</code> was discovered; however, upon review, it contained no useful information. The permissions for the user <code>vaxei</code> were checked using:
+          <br />
+          <Code>sudo -l</Code>
+          <br />
+          This revealed that <em>perl</em> could be executed as the user <code>luisillo</code> without requiring a password. Exploiting this configuration, the following command was executed to obtain a shell:
+          <br />
+          <Code>sudo -u luisillo /usr/bin/perl -e 'exec "/bin/bash";'</Code>
+          <br /><br />
+          Once access was obtained as <code>luisillo</code>, the available permissions were listed again, revealing the following:
+          <br />
+          <img class="pt-4" src="/images/machines/Psycho/permisos.png" alt="Permissions screenshot" />
+          <br /><br />
+          Next, the contents of the file <code>/opt/paw.py</code> were inspected:
+          <br />
+          <img class="pt-4" src="/images/machines/Psycho/paw.png" alt="paw.py screenshot" />
+          <br /><br />
+          Since it was not possible to modify the contents of this file or its associated libraries, a technique known as <strong>Python Library Hijacking</strong> was employed to achieve privilege escalation.
+        </SectionText>
+        <h3 class="text-white text-2xl lg:text-2xl font-bold flex flex-row gap-x-2 pb-4">
+          Python Library Hijacking
+        </h3>
+        <SectionText>
+          To implement the Python Library Hijacking technique, a file named <code>subprocess.py</code> was created in the <code>/opt</code> directory, with the intention that it would replace the legitimate library. The content of the file is as follows:
+          <br />
+          <Code>
+import os<br />
+os.system('bash')
+          </Code>
+          Appropriate execution permissions were then granted using:
+          <br />
+          <Code>chmod +x subprocess.py</Code>
+          <br />
+          Finally, the file <code>paw.py</code> was executed using:
+          <br />
+          <Code>sudo /usr/bin/python3 /opt/paw.py</Code>
+          <br />
+          This action resulted in a root shell.
+        </SectionText>
+      </Section>
+    </div>
   </main>
+  <script>
+    const toggleBtn = document.getElementById('toggleLang');
+    const langEs = document.getElementById('lang-es');
+    const langEn = document.getElementById('lang-en');
+
+    toggleBtn.addEventListener('click', () => {
+      if (langEs.style.display !== 'none') {
+        langEs.style.display = 'none';
+        langEn.style.display = 'block';
+        toggleBtn.innerText = 'Cambiar a Español';
+      } else {
+        langEs.style.display = 'block';
+        langEn.style.display = 'none';
+        toggleBtn.innerText = 'Switch to English';
+      }
+    });
+  </script>
 </Layout>
