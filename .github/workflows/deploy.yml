@@ -20,24 +20,28 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8.6.12  # Specify the latest pnpm version
+          version: 8.6.12
 
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'  # Use pnpm for caching
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install  # Install project dependencies
+        run: pnpm install
 
       - name: Build Astro site
-        run: pnpm run build  # Build the site
+        run: pnpm run build
+
+      # Paso adicional para copiar el sitemap a la carpeta public
+      - name: Copiar sitemap a carpeta public
+        run: cp dist/sitemap.xml public/sitemap.xml
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist  # Ensure this matches your Astro output directory
+          path: public
 
   deploy:
     needs: build
