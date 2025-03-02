@@ -11,10 +11,10 @@ interface Props {
 
 const { name, author, level, link, platform } = Astro.props
 ---
-
+<div class="pb-12">
 <h2 class="text-white text-3xl lg:text-4xl font-bold flex flex-row gap-x-2 pb-8">
     <InfoIcon class="w-10 h-10 hover:scale-105 transition" />{name}
-  </h2>
+</h2>
   <h4 class="font-bold text-xl lg:text-xl text-wrap pb-2">
     Author: <span class="font-normal">{author}</span>
   </h4>
@@ -24,3 +24,4 @@ const { name, author, level, link, platform } = Astro.props
   <a href={link} class="text-blue-400 text-xl lg:text-xl text-wrap hover:underline">
     {platform}
   </a>
+</div>

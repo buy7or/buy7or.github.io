@@ -13,15 +13,29 @@ import Code from "@/components/Code.astro";
             <IconContainer src="/images/machines/Pequenas/icon.webp"/>
             <SectionContainer>
                 <InfoContainer name="Pequeñas Mentirosas" author="beafn28" level="Easy" link="https://dockerlabs.es/" platform="DockerLabs" />
-                <Titulo>Escaneo De Puertos</Titulo>
+                <Titulo>Escaneo de Puertos</Titulo>
                 <Text>
                     Se realizó un escaneo de puertos en la IP objetivo, identificándose que los puertos <strong>80</strong> y <strong>22</strong> se encuentran abiertos, lo que indica la disponibilidad de servicios HTTP y SSH. Se ejecutó el siguiente comando:
                     <br />
                     <Code>nmap -Pn -sS 172.17.0.2</Code>
-                    <br />
                     Posteriormente, se procedió a listar las versiones de los servicios, sin obtener información relevante ni detectar vulnerabilidades conocidas. Al acceder a http://172.17.0.2, se observó
-                    un mensaje que decía 
-                    </SectionText>
+                    un mensaje que decía <strong>Pista: Encuentra la clave para A en los archivos.</strong>
+                    <br/>
+                    <br/>
+                    Podemos suponer que uno de los usuarios del sistema es a, y al estar el puerto 22 abierto intentamos un ataque de fuerza bruta al servicio ssh usando la lista rockyou en las contraseñas y el usuario
+                    'a' mediante la herramienta hydra.
+                    <Code>hydra -l a -P Github/Lists/rockyou.txt 172.17.0.2 ssh</Code>
+                    Obtenemos la contraseña <strong>secret</strong> para el usuario a y accedemos a la maquina con estas credenciales.
+                    <Code>ssh a@172.17.0.2</Code>
+                    Una vez dentro intentamos listar permisos sin exito, por lo que nos disponemos a listar los usuarios del sistema.
+                    <Code>cat /etc/paswd</Code>
+                    Y encontramos el usuario <strong>spencer</strong>. Utilizando este usuario intentamos otro ataque de fuerza bruta en este caso usando el usuario encontrado.
+                    <Code>hydra -l spencer -P Github/Lists/rockyou.txt 172.17.0.2 ssh</Code>
+                    Logramos obtener la contraseña <strong>password1</strong> para dicho usuario. Nos conectamos a la máquina mediante ssh usando las nuevas credenciales obtenidas.
+                </Text>
+                <Titulo>Escalada de Privilegios</Titulo>
+                <Text>
+                    
                 </Text>
             </SectionContainer>
         </div>
