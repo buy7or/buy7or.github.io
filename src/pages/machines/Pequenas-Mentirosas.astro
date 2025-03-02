@@ -3,12 +3,27 @@ import IconContainer from "@/components/IconContainer.astro";
 import InfoContainer from "@/components/InfoContainer.astro";
 import SectionContainer from "@/components/SectionContainer.astro";
 import Layout from "@/layouts/Layout.astro";
+import Titulo from "@/components/Titulo.astro";
+import Text from "@/components/SectionText.astro";
+import Code from "@/components/Code.astro";
 ---
 <Layout title="Pequeñas Mentirosas DockerLabs Writeup" description="Writeup Pequeñas Mentirosas DockerLabs">
     <main class="px-4">
-        <IconContainer src="/images/machines/Pequenas/icon.webp"/>
-        <SectionContainer>
-            <InfoContainer name="Pequeñas Mentirosas" author="beafn28" level="Easy" link="https://dockerlabs.es/" platform="DockerLabs" />
-        </SectionContainer>
+        <div id="lang-es">
+            <IconContainer src="/images/machines/Pequenas/icon.webp"/>
+            <SectionContainer>
+                <InfoContainer name="Pequeñas Mentirosas" author="beafn28" level="Easy" link="https://dockerlabs.es/" platform="DockerLabs" />
+                <Titulo>Escaneo De Puertos</Titulo>
+                <Text>
+                    Se realizó un escaneo de puertos en la IP objetivo, identificándose que los puertos <strong>80</strong> y <strong>22</strong> se encuentran abiertos, lo que indica la disponibilidad de servicios HTTP y SSH. Se ejecutó el siguiente comando:
+                    <br />
+                    <Code>nmap -Pn -sS 172.17.0.2</Code>
+                    <br />
+                    Posteriormente, se procedió a listar las versiones de los servicios, sin obtener información relevante ni detectar vulnerabilidades conocidas.
+                    </SectionText>
+                </Text>
+            </SectionContainer>
+        </div>
+        
     </main>
 </Layout>
