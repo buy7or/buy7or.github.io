@@ -35,7 +35,13 @@ import Code from "@/components/Code.astro";
                 </Text>
                 <Titulo>Escalada de Privilegios</Titulo>
                 <Text>
-                    
+                    Una vez dentro como el usuario spencer listamos los permisos del usuario<Code>sudo -l</Code> Observamos que podemos 
+                    ejecutar sin proporcionar contraseña como root python3 por lo que corriendo el siguiente comando nos debería proporcionar una bash como 
+                    usuario root
+                    <Code>python3 -c 'import os; os.system("/bin/sh")'</Code>
+                    Observamos que disponemos de una bash y corremo
+                    <Code>whoami</Code>
+                    Para confirmar que somos el usuario root.
                 </Text>
             </SectionContainer>
         </div>
