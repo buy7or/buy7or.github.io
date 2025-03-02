@@ -17,10 +17,10 @@ import Code from "@/components/Code.astro";
                 <Text>
                     Se realizó un escaneo de puertos en la IP objetivo, identificándose que los puertos <strong>80</strong> y <strong>22</strong> se encuentran abiertos, lo que indica la disponibilidad de servicios HTTP y SSH. Se ejecutó el siguiente comando:
                     <br />
-                    <Code>Prueba 1</Code>
+                    <Code>nmap -Pn -sS 172.17.0.2</Code>
                     <br />
-                    Posteriormente, se procedió a listar las versiones de los servicios, sin obtener información relevante ni detectar vulnerabilidades conocidas.
-                    <Code>Prueba 2</Code>
+                    Posteriormente, se procedió a listar las versiones de los servicios, sin obtener información relevante ni detectar vulnerabilidades conocidas. Al acceder a http://172.17.0.2, se observó
+                    un mensaje que decía 
                     </SectionText>
                 </Text>
             </SectionContainer>
