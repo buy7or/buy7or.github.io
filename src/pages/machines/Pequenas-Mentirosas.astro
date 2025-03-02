@@ -9,42 +9,96 @@ import Code from "@/components/Code.astro";
 ---
 <Layout title="Pequeñas Mentirosas DockerLabs Writeup" description="Writeup Pequeñas Mentirosas DockerLabs">
     <main class="px-4">
+        <div class="relative pointer-events-none flex justify-end p-4">
+            <button id="toggleLang" 
+              class="pointer-events-auto inline-flex items-center justify-center gap-2 px-4 py-1 text-gray-800 transition bg-gray-100 border border-gray-300 rounded-full dark:bg-gray-800 dark:border-gray-600 dark:text-white focus-visible:ring-yellow-500/80 text-md hover:bg-gray-900 hover:border-gray-700 hover:text-white dark:hover:bg-gray-100 dark:hover:border-gray-300 dark:hover:text-black group max-w-fit focus:outline-none focus-visible:outline-none focus-visible:ring focus-visible:ring-white focus-visible:ring-offset-2 active:bg-black z-50">
+              Switch to English
+            </button>
+          </div>  
         <div id="lang-es">
             <IconContainer src="/images/machines/Pequenas/icon.webp"/>
             <SectionContainer>
-                <InfoContainer name="Pequeñas Mentirosas" author="beafn28" level="Easy" link="https://dockerlabs.es/" platform="DockerLabs" />
+                <InfoContainer name="Pequeñas Mentirosas" author="beafn28" level="Fácil" link="https://dockerlabs.es/" platform="DockerLabs" />
                 <Titulo>Escaneo de Puertos</Titulo>
                 <Text>
-                    Se realizó un escaneo de puertos en la IP objetivo, identificándose que los puertos <strong>80</strong> y <strong>22</strong> se encuentran abiertos, lo que indica la disponibilidad de servicios HTTP y SSH. Se ejecutó el siguiente comando:
+                    Se llevó a cabo un análisis de puertos en la dirección IP objetivo, identificándose que los puertos <strong>80</strong> y <strong>22</strong> están activos, lo cual sugiere la presencia de servicios HTTP y SSH. Se ejecutó el siguiente comando:
                     <br />
                     <Code>nmap -Pn -sS 172.17.0.2</Code>
-                    Posteriormente, se procedió a listar las versiones de los servicios, sin obtener información relevante ni detectar vulnerabilidades conocidas. Al acceder a http://172.17.0.2, se observó
-                    un mensaje que decía <strong>Pista: Encuentra la clave para A en los archivos.</strong>
-                    <br/>
-                    <br/>
-                    Podemos suponer que uno de los usuarios del sistema es a, y al estar el puerto 22 abierto intentamos un ataque de fuerza bruta al servicio ssh usando la lista rockyou en las contraseñas y el usuario
-                    'a' mediante la herramienta hydra.
+                    A continuación, se procedió a identificar las versiones de los servicios; sin embargo, no se obtuvo información adicional ni se detectaron vulnerabilidades conocidas. Al acceder a http://172.17.0.2, se visualizó un mensaje que indicaba <strong>Pista: Encuentra la clave para A en los archivos.</strong>
+                    <br/><br/>
+                    Se asume que uno de los usuarios del sistema es "a". Dado que el puerto 22 estaba abierto, se realizó un ataque de fuerza bruta contra el servicio SSH utilizando la lista rockyou para contraseñas y el usuario "a" a través de la herramienta hydra:
                     <Code>hydra -l a -P Github/Lists/rockyou.txt 172.17.0.2 ssh</Code>
-                    Obtenemos la contraseña <strong>secret</strong> para el usuario a y accedemos a la maquina con estas credenciales.
+                    Se obtuvo la contraseña <strong>secret</strong> para el usuario "a", permitiendo el acceso a la máquina con dichas credenciales:
                     <Code>ssh a@172.17.0.2</Code>
-                    Una vez dentro intentamos listar permisos sin exito, por lo que nos disponemos a listar los usuarios del sistema.
+                    Una vez dentro, se intentó listar los permisos sin éxito, por lo que se procedió a enumerar los usuarios del sistema:
                     <Code>cat /etc/paswd</Code>
-                    Y encontramos el usuario <strong>spencer</strong>. Utilizando este usuario intentamos otro ataque de fuerza bruta en este caso usando el usuario encontrado.
+                    Se identificó el usuario <strong>spencer</strong>. Con este hallazgo, se realizó un nuevo ataque de fuerza bruta, ahora dirigido al usuario identificado:
                     <Code>hydra -l spencer -P Github/Lists/rockyou.txt 172.17.0.2 ssh</Code>
-                    Logramos obtener la contraseña <strong>password1</strong> para dicho usuario. Nos conectamos a la máquina mediante ssh usando las nuevas credenciales obtenidas.
+                    Se logró obtener la contraseña <strong>password1</strong> para el usuario "spencer". Posteriormente, se accedió a la máquina mediante SSH utilizando las nuevas credenciales.
                 </Text>
                 <Titulo>Escalada de Privilegios</Titulo>
                 <Text>
-                    Una vez dentro como el usuario spencer listamos los permisos del usuario<Code>sudo -l</Code> Observamos que podemos 
-                    ejecutar sin proporcionar contraseña como root python3 por lo que corriendo el siguiente comando nos debería proporcionar una bash como 
-                    usuario root
+                    Una vez ingresado como el usuario "spencer", se revisaron los permisos mediante el comando:
+                    <Code>sudo -l</Code>
+                    Se observó la posibilidad de ejecutar python3 como root sin necesidad de contraseña, lo que permitió obtener una shell con privilegios de superusuario al ejecutar el siguiente comando:
                     <Code>python3 -c 'import os; os.system("/bin/sh")'</Code>
-                    Observamos que disponemos de una bash y corremo
+                    Con la shell obtenida, se verificó la identidad del usuario con:
                     <Code>whoami</Code>
-                    Para confirmar que somos el usuario root.
+                    Confirmando así que se había alcanzado el nivel de usuario root.
                 </Text>
             </SectionContainer>
         </div>
-        
+        <div id="lang-en" style="display: none;">
+            <IconContainer src="/images/machines/Pequenas/icon.webp"/>
+            <SectionContainer>
+                <InfoContainer name="Pequeñas Mentirosas" author="beafn28" level="Easy" link="https://dockerlabs.es/" platform="DockerLabs" />
+                <Titulo>Port Scanning</Titulo>
+                <Text>
+                    A port scan was performed on the target IP address, identifying that ports <strong>80</strong> and <strong>22</strong> are active, which suggests the presence of HTTP and SSH services. The following command was executed:
+                    <br />
+                    <Code>nmap -Pn -sS 172.17.0.2</Code>
+                    Next, the service versions were enumerated; however, no additional information was obtained, nor were any known vulnerabilities detected. When accessing http://172.17.0.2, a message was displayed stating <strong>Hint: Find the key for A in the files.</strong>
+                    <br/><br/>
+                    It is assumed that one of the system users is "a". Since port 22 was open, a brute-force attack was carried out against the SSH service using the rockyou password list for the user "a" via the hydra tool:
+                    <Code>hydra -l a -P Github/Lists/rockyou.txt 172.17.0.2 ssh</Code>
+                    The password <strong>secret</strong> was obtained for the user "a", allowing access to the machine with those credentials:
+                    <Code>ssh a@172.17.0.2</Code>
+                    Once inside, an attempt was made to list the permissions without success, so the system users were enumerated:
+                    <Code>cat /etc/paswd</Code>
+                    The user <strong>spencer</strong> was identified. With this discovery, a new brute-force attack was launched, this time targeting the identified user:
+                    <Code>hydra -l spencer -P Github/Lists/rockyou.txt 172.17.0.2 ssh</Code>
+                    The password <strong>password1</strong> was obtained for the user "spencer". Subsequently, the machine was accessed via SSH using the new credentials.
+                </Text>
+                <Titulo>Privilege Escalation</Titulo>
+                <Text>
+                    Once logged in as the user "spencer", the permissions were checked using the command:
+                    <Code>sudo -l</Code>
+                    It was observed that python3 could be executed as root without a password, which allowed for obtaining a shell with superuser privileges by executing the following command:
+                    <Code>python3 -c 'import os; os.system("/bin/sh")'</Code>
+                    With the obtained shell, the user identity was verified with:
+                    <Code>whoami</Code>
+                    Thus confirming that root-level access had been achieved.
+                </Text>
+            </SectionContainer>
+
+        </div>
     </main>
 </Layout>
+
+<script>
+    const toggleBtn = document.getElementById('toggleLang');
+    const langEs = document.getElementById('lang-es');
+    const langEn = document.getElementById('lang-en');
+
+    toggleBtn.addEventListener('click', () => {
+      if (langEs.style.display !== 'none') {
+        langEs.style.display = 'none';
+        langEn.style.display = 'block';
+        toggleBtn.innerText = 'Cambiar a Español';
+      } else {
+        langEs.style.display = 'block';
+        langEn.style.display = 'none';
+        toggleBtn.innerText = 'Switch to English';
+      }
+    });
+  </script>

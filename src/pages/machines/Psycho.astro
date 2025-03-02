@@ -218,21 +218,22 @@ os.system('bash')
       </Section>
     </div>
   </main>
-  <script>
-    const toggleBtn = document.getElementById('toggleLang');
-    const langEs = document.getElementById('lang-es');
-    const langEn = document.getElementById('lang-en');
-
-    toggleBtn.addEventListener('click', () => {
-      if (langEs.style.display !== 'none') {
-        langEs.style.display = 'none';
-        langEn.style.display = 'block';
-        toggleBtn.innerText = 'Cambiar a Español';
-      } else {
-        langEs.style.display = 'block';
-        langEn.style.display = 'none';
-        toggleBtn.innerText = 'Switch to English';
-      }
-    });
-  </script>
+  
 </Layout>
+<script>
+  const toggleBtn = document.getElementById('toggleLang');
+  const langEs = document.getElementById('lang-es');
+  const langEn = document.getElementById('lang-en');
+
+  toggleBtn.addEventListener('click', () => {
+    if (langEs.style.display !== 'none') {
+      langEs.style.display = 'none';
+      langEn.style.display = 'block';
+      toggleBtn.innerText = 'Cambiar a Español';
+    } else {
+      langEs.style.display = 'block';
+      langEn.style.display = 'none';
+      toggleBtn.innerText = 'Switch to English';
+    }
+  });
+</script>
